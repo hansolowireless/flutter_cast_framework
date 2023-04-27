@@ -119,7 +119,7 @@ fun getMediaMetadataKey(mediaMetadataKey: String): String {
         PlatformBridgeApis.MediaMetadataKey.TITLE.name -> "com.google.android.gms.cast.metadata.TITLE"
         PlatformBridgeApis.MediaMetadataKey.TRACK_NUMBER.name -> "com.google.android.gms.cast.metadata.TRACK_NUMBER"
         PlatformBridgeApis.MediaMetadataKey.WIDTH.name -> "com.google.android.gms.cast.metadata.WIDTH"
-        else -> throw IllegalArgumentException("mediaMetadataKey.strings keys is incorrect")
+        else -> throw IllegalArgumentException("mediaMetadataKey.strings keys is incorrect: $mediaMetadataKey")
     }
 }
 
