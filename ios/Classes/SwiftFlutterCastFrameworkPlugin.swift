@@ -106,7 +106,7 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
         let notificationCenter = NotificationCenter.default
         let app = UIApplication.shared
         notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: app)
-        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: app)
+//        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: app)
         //notificationCenter.addObserver(self, selector: #selector(appDidEnterBackground), name: NSNotification.Name.UIApplicationDidEnterBackground, object: app)
         //notificationCenter.addObserver(self, selector: #selector(appWillEnterForeground), name: NSNotification.Name.UIApplicationWillEnterForeground, object: app)
         //notificationCenter.addObserver(self, selector: #selector(appWillTerminate), name: NSNotification.Name.UIApplicationWillTerminate, object: app)
@@ -259,6 +259,7 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
     }
     
     public func showCastDialogWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+        castContext.discoveryManager.startDiscovery()
         castContext.presentCastDialog()
     }
     
@@ -395,9 +396,9 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
     
     // onSessionSuspended
     public func sessionManager(_ sessionManager: GCKSessionManager, didSuspend session: GCKCastSession, with reason: GCKConnectionSuspendReason) {
-        debugPrint("SessionListener: didSuspend")
-        flutterApi.onSessionSuspended { (_:FlutterError?) in
-        }
+//        debugPrint("SessionListener: didSuspend")
+//        flutterApi.onSessionSuspended { (_:FlutterError?) in
+//        }
     }
     
     // onSessionStarting
@@ -421,9 +422,9 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
     // onSessionEnding
     public func sessionManager(_ sessionManager: GCKSessionManager, willEnd session: GCKCastSession) {
         debugPrint("SessionListener: willEnd")
-        stopProgressTimer()
-        flutterApi.onSessionEnding { (_:FlutterError?) in
-        }
+//        stopProgressTimer()
+//        flutterApi.onSessionEnding { (_:FlutterError?) in
+//        }
     }
     
     // onSessionStartFailed
