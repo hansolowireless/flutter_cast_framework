@@ -396,9 +396,9 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
     
     // onSessionSuspended
     public func sessionManager(_ sessionManager: GCKSessionManager, didSuspend session: GCKCastSession, with reason: GCKConnectionSuspendReason) {
-//        debugPrint("SessionListener: didSuspend")
-//        flutterApi.onSessionSuspended { (_:FlutterError?) in
-//        }
+        debugPrint("SessionListener: didSuspend")
+        flutterApi.onSessionSuspended { (_:FlutterError?) in
+        }
     }
     
     // onSessionStarting
@@ -422,9 +422,9 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
     // onSessionEnding
     public func sessionManager(_ sessionManager: GCKSessionManager, willEnd session: GCKCastSession) {
         debugPrint("SessionListener: willEnd")
-//        stopProgressTimer()
-//        flutterApi.onSessionEnding { (_:FlutterError?) in
-//        }
+        stopProgressTimer()
+        flutterApi.onSessionEnding { (_:FlutterError?) in
+        }
     }
     
     // onSessionStartFailed
