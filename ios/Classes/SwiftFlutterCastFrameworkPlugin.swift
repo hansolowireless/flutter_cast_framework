@@ -259,7 +259,6 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
     }
     
     public func showCastDialogWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-        castContext.discoveryManager.startDiscovery()
         castContext.presentCastDialog()
     }
     
