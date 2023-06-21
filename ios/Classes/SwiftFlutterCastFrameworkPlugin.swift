@@ -259,6 +259,7 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
     }
     
     public func showCastDialogWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+        castContext.discoveryManager.startDiscovery()
         castContext.presentCastDialog()
     }
     
@@ -440,7 +441,7 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
         debugPrint("SessionListener: didStart")
         flutterApi.onSessionStarted { (_:FlutterError?) in
         }
-        
+        castContext.discoveryManager.stopDiscovery()
         castSession = session
     }
     
@@ -456,6 +457,7 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
     // onSessionEnded
     public func sessionManager(_ sessionManager: GCKSessionManager, didEnd session: GCKCastSession, withError error: Error?) {
         debugPrint("SessionListener: didEnd")
+        castContext.discoveryManager.stopDiscovery()
         flutterApi.onSessionEnded { (_:FlutterError?) in
         }
     }
