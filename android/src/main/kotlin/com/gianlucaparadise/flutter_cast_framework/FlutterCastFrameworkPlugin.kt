@@ -60,13 +60,13 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
         mMessageCastingChannel = MessageCastingChannel(castFlutterApi)
 
-        CastContext.getSharedInstance(applicationContext, ).addCastStateListener { i ->
+        CastContext.getSharedInstance(applicationContext).addCastStateListener { i ->
             Log.d(TAG, "Cast state changed: $i")
             flutterApi?.onCastStateChanged(i.toLong()) { }
         }
 
         mSessionManager = CastContext.getSharedInstance(applicationContext).sessionManager
-        mCastSession = mSessionManager.currentCastSession
+        mCastSession = mSessionManager?.currentCastSession
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -98,7 +98,17 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
     }
     //endregion
 
-    private lateinit var mSessionManager: SessionManager
+    private var mSessionManager: SessionManager? = null
+        set(value) {
+            mSessionManager?.apply {
+                removeSessionManagerListener(
+                    mSessionManagerListener,
+                    CastSession::class.java
+                )
+            }
+            field = value
+        }
+
     private val mSessionManagerListener = CastSessionManagerListener()
     private val remoteMediaClientListener = RemoteMediaClientListener()
     private val mediaQueueListener = MediaQueueListener()
@@ -156,8 +166,8 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
     override fun onResume(owner: LifecycleOwner) {
         Log.d(TAG, "App: ON_RESUME")
-        mSessionManager.addSessionManagerListener(mSessionManagerListener, CastSession::class.java)
-        mCastSession = mSessionManager.currentCastSession
+        mSessionManager?.addSessionManagerListener(mSessionManagerListener, CastSession::class.java)
+        mCastSession = mSessionManager?.currentCastSession
 
         val context = applicationContext
         if (context == null) {
@@ -170,9 +180,9 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
     override fun onPause(owner: LifecycleOwner) {
         Log.d(TAG, "App: ON_PAUSE")
-        mSessionManager.removeSessionManagerListener(
-                mSessionManagerListener,
-                CastSession::class.java
+        mSessionManager?.removeSessionManagerListener(
+            mSessionManagerListener,
+            CastSession::class.java
         )
         // I can't set this to null because I need the cast session to send commands from notification
         // mCastSession = null
@@ -262,18 +272,18 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
             val adBreakId = mediaStatus.currentAdBreak?.id ?: ""
             val adBreakClipId = currentAdBreakClip.id ?: ""
             val adBreakClipProgressMs = remoteMediaClient?.approximateAdBreakClipPositionMs
-                    ?: 0
+                ?: 0
             val adBreakClipDurationMs = currentAdBreakClip.durationInMs
             if (adBreakClipDurationMs <= 0) return
 
             val whenSkippableMs = currentAdBreakClip.whenSkippableInMs
 
             flutterApi?.onAdBreakClipProgressUpdated(
-                    adBreakId,
-                    adBreakClipId,
-                    adBreakClipProgressMs,
-                    adBreakClipDurationMs,
-                    whenSkippableMs,
+                adBreakId,
+                adBreakClipId,
+                adBreakClipProgressMs,
+                adBreakClipDurationMs,
+                whenSkippableMs,
             ) { }
         }
     }
@@ -345,7 +355,7 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
         override fun getMediaInfo(): PlatformBridgeApis.MediaInfo {
             val remoteMediaClient: RemoteMediaClient = remoteMediaClient
-                    ?: throw IllegalStateException("Missing cast session")
+                ?: throw IllegalStateException("Missing cast session")
 
             return getFlutterMediaInfo(remoteMediaClient.mediaInfo)
         }
@@ -367,7 +377,10 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
         override fun showTracksChooserDialog() {
             if (activity !is FragmentActivity) {
-                Log.e(TAG, "Error: no_fragment_activity, FlutterCastFramework requires activity to be a FragmentActivity.")
+                Log.e(
+                    TAG,
+                    "Error: no_fragment_activity, FlutterCastFramework requires activity to be a FragmentActivity."
+                )
                 return
             }
 
@@ -378,7 +391,7 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
             }
 
             TracksChooserDialogFragment.newInstance()
-                    .show(activity.supportFragmentManager, "FlutterCastFrameworkTracksChooserDialog")
+                .show(activity.supportFragmentManager, "FlutterCastFrameworkTracksChooserDialog")
         }
 
         override fun skipAd() {
@@ -388,10 +401,12 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
         override fun seekTo(position: Long) {
             val remoteMediaClient: RemoteMediaClient = remoteMediaClient ?: return
-            remoteMediaClient.seek(MediaSeekOptions.Builder()
+            remoteMediaClient.seek(
+                MediaSeekOptions.Builder()
                     .setPosition(position)
                     .setResumeState(MediaSeekOptions.RESUME_STATE_UNCHANGED)
-                    .build());
+                    .build()
+            );
         }
 
         override fun queueAppendItem(item: PlatformBridgeApis.MediaQueueItem) {
@@ -440,20 +455,24 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
         }
     }
 
-    private fun getOnNamespaceResult(oldSession: CastSession?, newSession: CastSession?) = PlatformBridgeApis.CastFlutterApi.Reply<MutableList<String>> { namespaces ->
-        Log.d(TAG, "Updating mCastSession - getOnNamespaceResult - param: $namespaces")
-        if (oldSession == null && newSession == null) return@Reply // nothing to do here
-        if (namespaces == null || !namespaces.any()) return@Reply  // nothing to do here
+    private fun getOnNamespaceResult(oldSession: CastSession?, newSession: CastSession?) =
+        PlatformBridgeApis.CastFlutterApi.Reply<MutableList<String>> { namespaces ->
+            Log.d(TAG, "Updating mCastSession - getOnNamespaceResult - param: $namespaces")
+            if (oldSession == null && newSession == null) return@Reply // nothing to do here
+            if (namespaces == null || !namespaces.any()) return@Reply  // nothing to do here
 
-        namespaces.forEach { namespace ->
-            try {
-                oldSession?.removeMessageReceivedCallbacks(namespace)
-                if (mMessageCastingChannel != null) newSession?.setMessageReceivedCallbacks(namespace, mMessageCastingChannel!!)
-            } catch (e: java.lang.Exception) {
-                Log.e(TAG, "Updating mCastSession - Exception while creating channel", e)
+            namespaces.forEach { namespace ->
+                try {
+                    oldSession?.removeMessageReceivedCallbacks(namespace)
+                    if (mMessageCastingChannel != null) newSession?.setMessageReceivedCallbacks(
+                        namespace,
+                        mMessageCastingChannel!!
+                    )
+                } catch (e: java.lang.Exception) {
+                    Log.e(TAG, "Updating mCastSession - Exception while creating channel", e)
+                }
             }
         }
-    }
 
     private inner class CastSessionManagerListener : SessionManagerListener<CastSession> {
         private var TAG = "SessionManagerListenerImpl"
