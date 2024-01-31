@@ -410,12 +410,13 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
         override fun seekTo(position: Long) {
             val remoteMediaClient: RemoteMediaClient = remoteMediaClient ?: return
-            remoteMediaClient.seek(
-                MediaSeekOptions.Builder()
-                    .setPosition(position)
-                    .setResumeState(MediaSeekOptions.RESUME_STATE_UNCHANGED)
-                    .build()
-            );
+            // TODO seek has issues with live streams when initializing investigate this further
+//            remoteMediaClient.seek(
+//                MediaSeekOptions.Builder()
+//                    .setPosition(position)
+//                    .setResumeState(MediaSeekOptions.RESUME_STATE_UNCHANGED)
+//                    .build()
+//            )
         }
 
         override fun queueAppendItem(item: PlatformBridgeApis.MediaQueueItem) {
