@@ -67,12 +67,12 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
         mMessageCastingChannel = MessageCastingChannel(castFlutterApi)
 
-        mCastContext?.addCastStateListener { i ->
+        CastContext.getSharedInstance(applicationContext)?.addCastStateListener { i ->
             Log.d(TAG, "Cast state changed: $i")
             flutterApi?.onCastStateChanged(i.toLong()) { }
         }
 
-        mSessionManager = mCastContext?.sessionManager
+        mSessionManager = CastContext.getSharedInstance(applicationContext)?.sessionManager
         mCastSession = mSessionManager?.currentCastSession
     }
 
@@ -87,6 +87,7 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         Log.d(TAG, "onAttachedToActivity")
         activity = binding.activity
+        mSessionManager = CastContext.getSharedInstance(activity!!.applicationContext).sessionManager
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -178,12 +179,11 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
         mCastSession = mSessionManager?.currentCastSession
 
         val context = applicationContext
-        val castContext = mCastContext
-        if (context == null || castContext == null) {
+        if (context == null) {
             Log.d(TAG, "App: ON_RESUME - missing context")
             return
         }
-        val castState = castContext.castState
+        val castState = CastContext.getSharedInstance(context).castState
         flutterApi?.onCastStateChanged(castState.toLong()) { }
     }
 
