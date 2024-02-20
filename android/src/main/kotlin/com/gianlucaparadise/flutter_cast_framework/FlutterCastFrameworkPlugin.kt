@@ -87,7 +87,11 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         Log.d(TAG, "onAttachedToActivity")
         activity = binding.activity
-        mSessionManager = CastContext.getSharedInstance(activity!!.applicationContext).sessionManager
+        try{
+            mSessionManager = CastContext.getSharedInstance(activity!!.applicationContext).sessionManager
+        } catch (e: java.lang.Exception){
+            Log.e(TAG, "Updating mSessionManager - Exception while onAttachedToActivity", e)
+        }
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -183,8 +187,12 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
             Log.d(TAG, "App: ON_RESUME - missing context")
             return
         }
-        val castState = CastContext.getSharedInstance(context).castState
-        flutterApi?.onCastStateChanged(castState.toLong()) { }
+        try{
+            val castState = CastContext.getSharedInstance(context).castState
+            flutterApi?.onCastStateChanged(castState.toLong()) { }
+        } catch (e: java.lang.Exception){
+            Log.e(TAG, "Updating onCastStateChanged - Exception while onResume", e)
+        }
     }
 
     override fun onPause(owner: LifecycleOwner) {
