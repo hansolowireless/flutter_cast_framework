@@ -43,12 +43,6 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
         onAttachedToEngine(binding.applicationContext, binding.binaryMessenger)
     }
 
-    //region FlutterPlugin interface
-    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        Log.d(TAG, "onAttachedToEngine")
-        onAttachedToEngine(binding.applicationContext, binding.binaryMessenger)
-    }
-
     private fun onAttachedToEngine(applicationContext: Context, messenger: BinaryMessenger) {
         this.applicationContext = applicationContext
 
