@@ -31,16 +31,16 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, DefaultLifecycleObserver {
     companion object {
         const val TAG = "AndroidCastPlugin"
-
-        @JvmStatic
-        fun registerWith(registrar: Registrar) {
-            val plugin = FlutterCastFrameworkPlugin()
-            plugin.onAttachedToEngine(registrar.context(), registrar.messenger())
-        }
     }
 
     init {
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+    }
+
+    //region FlutterPlugin interface
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        Log.d(TAG, "onAttachedToEngine")
+        onAttachedToEngine(binding.applicationContext, binding.binaryMessenger)
     }
 
     //region FlutterPlugin interface
