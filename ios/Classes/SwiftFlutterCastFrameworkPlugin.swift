@@ -234,6 +234,11 @@ public class SwiftFlutterCastFrameworkPlugin: NSObject, FlutterPlugin, GCKSessio
     private func fireMediaProgressUpdate() {
         let durationSecs = remoteMediaClient?.mediaStatus?.mediaInformation?.streamDuration ?? 0
         let progressInterval = remoteMediaClient?.approximateStreamPosition() ?? 0
+
+        // durationSecs is infinite for live streams
+        if durationSecs.isInfinite{
+            return
+        }
         
         let durationMs = Int(durationSecs * 1000)
         let progressMs = Int(progressInterval * 1000)

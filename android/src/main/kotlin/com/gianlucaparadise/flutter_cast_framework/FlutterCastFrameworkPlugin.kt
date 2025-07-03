@@ -67,12 +67,12 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
         mMessageCastingChannel = MessageCastingChannel(castFlutterApi)
 
-        mCastContext?.addCastStateListener { i ->
+        CastContext.getSharedInstance(applicationContext)?.addCastStateListener { i ->
             Log.d(TAG, "Cast state changed: $i")
             flutterApi?.onCastStateChanged(i.toLong()) { }
         }
 
-        mSessionManager = mCastContext?.sessionManager
+        mSessionManager = CastContext.getSharedInstance(applicationContext)?.sessionManager
         mCastSession = mSessionManager?.currentCastSession
     }
 
@@ -87,6 +87,11 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         Log.d(TAG, "onAttachedToActivity")
         activity = binding.activity
+        try{
+            mSessionManager = CastContext.getSharedInstance(activity!!.applicationContext).sessionManager
+        } catch (e: java.lang.Exception){
+            Log.e(TAG, "Updating mSessionManager - Exception while onAttachedToActivity", e)
+        }
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -178,13 +183,16 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
         mCastSession = mSessionManager?.currentCastSession
 
         val context = applicationContext
-        val castContext = mCastContext
-        if (context == null || castContext == null) {
+        if (context == null) {
             Log.d(TAG, "App: ON_RESUME - missing context")
             return
         }
-        val castState = castContext.castState
-        flutterApi?.onCastStateChanged(castState.toLong()) { }
+        try{
+            val castState = CastContext.getSharedInstance(context).castState
+            flutterApi?.onCastStateChanged(castState.toLong()) { }
+        } catch (e: java.lang.Exception){
+            Log.e(TAG, "Updating onCastStateChanged - Exception while onResume", e)
+        }
     }
 
     override fun onPause(owner: LifecycleOwner) {
@@ -410,12 +418,13 @@ class FlutterCastFrameworkPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
         override fun seekTo(position: Long) {
             val remoteMediaClient: RemoteMediaClient = remoteMediaClient ?: return
-            remoteMediaClient.seek(
-                MediaSeekOptions.Builder()
-                    .setPosition(position)
-                    .setResumeState(MediaSeekOptions.RESUME_STATE_UNCHANGED)
-                    .build()
-            );
+            // TODO seek has issues with live streams when initializing investigate this further
+//            remoteMediaClient.seek(
+//                MediaSeekOptions.Builder()
+//                    .setPosition(position)
+//                    .setResumeState(MediaSeekOptions.RESUME_STATE_UNCHANGED)
+//                    .build()
+//            )
         }
 
         override fun queueAppendItem(item: PlatformBridgeApis.MediaQueueItem) {

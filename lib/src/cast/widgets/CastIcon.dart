@@ -59,7 +59,7 @@ class _CastIconState extends State<CastIcon> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     switch (_castState) {
       case CastState.unavailable:
-        return _getButton("assets/ic_cast_24dp.svg", _disabledIconColor);
+        return _getButton("assets/ic_cast_24dp.svg", widget.color);
 
       case CastState.unconnected:
         return _getButton("assets/ic_cast_24dp.svg", widget.color);

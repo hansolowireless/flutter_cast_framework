@@ -17,7 +17,7 @@ A new flutter plugin project.
   s.static_framework = true
 
   s.dependency 'Flutter'
-  s.dependency 'google-cast-sdk-no-bluetooth', '~> 4.7.0'
+  s.dependency 'google-cast-sdk', '~> 4.8.0'
 
   s.ios.deployment_target = '10.0'
 
